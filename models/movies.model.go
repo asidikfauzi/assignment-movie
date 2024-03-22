@@ -15,4 +15,14 @@ type (
 		UpdatedAt   *time.Time `gorm:"default:null" json:"updated_at"`
 		DeletedAt   *time.Time `gorm:"default:null" json:"deleted_at"`
 	}
+
+	GetMovies struct {
+		ID          int        `json:"id"`
+		Title       string     `json:"title"`
+		Description string     `json:"description"`
+		Rating      float32    `json:"rating"`
+		Image       string     `json:"image"`
+		CreatedAt   time.Time  `json:"created_at"`
+		UpdatedAt   *time.Time `json:"updated_at"`
+	}
 )
