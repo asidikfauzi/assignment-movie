@@ -27,7 +27,7 @@ func (r *RouteService) InitRouter() {
 	{
 		prefix := api.Group("/v1")
 		{
-			movie := prefix.Group("/movie")
+			movie := prefix.Group("/movies")
 			{
 				movie.GET("", r.MovieService.GetAll)
 				movie.GET(":id", r.MovieService.GetByID)
