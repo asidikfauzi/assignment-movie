@@ -15,15 +15,16 @@ const (
 
 // Message Validator
 const (
-	RequiredMessage   = " must be required"
-	NumberMessage     = " must be a number"
-	MaxMessage        = " must be less than or equal to %s"
-	MinMessage        = " must be greater than or equal to %s"
-	DateFormatMessage = " must be in the date format (ex: 2006-01-02)"
-	EmailMessage      = " must be a valid email address"
-	PasswordMessage   = " must have at least one uppercase letter, one lowercase letter, and one digit"
-	RequiredIfMessage = " is required when '%s' is present"
-	RegexMessage      = " not valid"
+	RequiredMessage    = " must be required"
+	NumberMessage      = " must be a number"
+	MaxMessage         = " must be less than or equal to %s"
+	MinMessage         = " must be greater than or equal to %s"
+	DateFormatMessage  = " must be in the date format (ex: 2006-01-02)"
+	EmailMessage       = " must be a valid email address"
+	PasswordMessage    = " must have at least one uppercase letter, one lowercase letter, and one digit"
+	RequiredIfMessage  = " is required when '%s' is present"
+	RegexMessage       = " not valid"
+	MaxFileSizeMessage = "File size must be less than 2MB"
 )
 
 // Message Response
@@ -35,4 +36,7 @@ const (
 )
 
 // Storage
-const StorageImage = "common/public/assets/img/"
+const (
+	MaxFileSize  = 2 << 20 // 2 MB in bytes
+	StorageImage = "common/public/assets/img/"
+)
