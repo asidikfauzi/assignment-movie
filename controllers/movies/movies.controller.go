@@ -10,6 +10,7 @@ type MovieController interface {
 	GetByID(c *gin.Context)
 	Create(c *gin.Context)
 	Update(c *gin.Context)
+	Delete(c *gin.Context)
 }
 
 type MasterMovies struct {

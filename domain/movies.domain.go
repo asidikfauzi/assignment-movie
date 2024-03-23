@@ -14,6 +14,7 @@ type (
 		GetByID(c *gin.Context, id int, startTime time.Time) (models.GetMovies, error)
 		Create(c *gin.Context, file *multipart.FileHeader, req models.ReqMovie, startTime time.Time) error
 		Update(c *gin.Context, id string, file *multipart.FileHeader, req models.ReqMovie, startTime time.Time) error
+		Delete(c *gin.Context, id string, startTime time.Time) error
 	}
 
 	MoviePostgres interface {
@@ -23,5 +24,6 @@ type (
 		Create(movie models.Movies) error
 		Update(movie models.Movies) error
 		CheckIfExists(movie models.Movies) (bool, error)
+		Delete(movie models.Movies) error
 	}
 )

@@ -200,3 +200,39 @@ func (s *Movies) Update(c *gin.Context, id string, file *multipart.FileHeader, r
 
 	return nil
 }
+
+func (s *Movies) Delete(c *gin.Context, id string, startTime time.Time) error {
+	var (
+		movie models.Movies
+		err   error
+	)
+
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		helper.ResponseAPI(c, false, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), []string{err.Error()}, startTime)
+		return err
+
+	}
+
+	_, err = s.moviesPostgres.GetByID(idInt)
+	if err != nil {
+		err = fmt.Errorf("Movies ID '%s' not found.", id)
+		helper.ResponseAPI(c, false, http.StatusNotFound, http.StatusText(http.StatusNotFound), []string{err.Error()}, startTime)
+		return err
+	}
+
+	timeNow := time.Now()
+	movie = models.Movies{
+		ID:        idInt,
+		DeletedAt: &timeNow,
+	}
+
+	err = s.moviesPostgres.Delete(movie)
+	if err != nil {
+		log.Printf("error movie service Delete: %s", err)
+		helper.ResponseAPI(c, false, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), []string{err.Error()}, startTime)
+		return err
+	}
+
+	return nil
+}

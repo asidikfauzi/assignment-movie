@@ -23,8 +23,7 @@ func (m *Movies) GetAll(limit, offset int, orderBy, search string) ([]models.Get
 	)
 	if err := m.DB.Model(&models.Movies{}).
 		Where("deleted_at IS NULL").
-		Where("title ILIKE ?", "%"+search+"%").
-		Or("description ILIKE ?", "%"+search+"%").
+		Where("(title ILIKE ? OR description ILIKE ?)", "%"+search+"%", "%"+search+"%").
 		Limit(limit).
 		Offset(offset).
 		Order(orderBy).
@@ -34,8 +33,7 @@ func (m *Movies) GetAll(limit, offset int, orderBy, search string) ([]models.Get
 
 	if err := m.DB.Model(&models.Movies{}).
 		Where("deleted_at IS NULL").
-		Where("title ILIKE ?", "%"+search+"%").
-		Or("description ILIKE ?", "%"+search+"%").
+		Where("(title ILIKE ? OR description ILIKE ?)", "%"+search+"%", "%"+search+"%").
 		Count(&count).Error; err != nil {
 		return nil, 0, err
 	}
@@ -98,4 +96,13 @@ func (m *Movies) CheckIfExists(movie models.Movies) (bool, error) {
 	}
 
 	return count > 0, nil
+}
+
+func (m *Movies) Delete(movie models.Movies) error {
+	if err := m.DB.Model(&models.Movies{}).Where("id = ?", movie.ID).
+		UpdateColumn("deleted_at", movie.DeletedAt).Error; err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -35,6 +35,7 @@ func (r *RouteService) InitRouter() {
 				movie.GET(":id", r.MovieService.GetByID)
 				movie.POST("", r.MovieService.Create)
 				movie.PATCH(":id", r.MovieService.Update)
+				movie.DELETE(":id", r.MovieService.Delete)
 			}
 		}
 

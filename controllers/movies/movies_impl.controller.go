@@ -22,7 +22,7 @@ func (m *MasterMovies) GetAll(c *gin.Context) {
 
 	dataCustomer, paginate, err := m.MoviesService.GetAll(c, pageParam, limitParam, orderByParam, search, startTime)
 	if err != nil {
-		log.Printf("error movies controller GetAllMovies :%s", err)
+		log.Printf("error movies controller GetAll :%s", err)
 		return
 	}
 
@@ -42,7 +42,7 @@ func (m *MasterMovies) GetByID(c *gin.Context) {
 
 	dataCustomer, err := m.MoviesService.GetByID(c, id, startTime)
 	if err != nil {
-		log.Printf("error movies controller GetMovieByID :%s", err)
+		log.Printf("error movies controller GetByID :%s", err)
 		return
 	}
 
@@ -83,7 +83,7 @@ func (m *MasterMovies) Create(c *gin.Context) {
 
 	err = m.MoviesService.Create(c, file, req, startTime)
 	if err != nil {
-		log.Printf("error movies controller CreateMovie :%s", err)
+		log.Printf("error movies controller Create :%s", err)
 		return
 	}
 
@@ -118,10 +118,24 @@ func (m *MasterMovies) Update(c *gin.Context) {
 
 	err := m.MoviesService.Update(c, id, file, req, startTime)
 	if err != nil {
-		log.Printf("error movies controller UpdateMovie :%s", err)
+		log.Printf("error movies controller Update :%s", err)
 		return
 	}
 
 	helper.ResponseAPI(c, true, http.StatusOK, http.StatusText(http.StatusOK), []string{helper.SuccessUpdatedData}, startTime)
+	return
+}
+
+func (m *MasterMovies) Delete(c *gin.Context) {
+	startTime := time.Now()
+
+	id := c.Param("id")
+	err := m.MoviesService.Delete(c, id, startTime)
+	if err != nil {
+		log.Printf("error movies controller Delete :%s", err)
+		return
+	}
+
+	helper.ResponseAPI(c, true, http.StatusOK, http.StatusText(http.StatusOK), []string{helper.SuccessDeletedData}, startTime)
 	return
 }
