@@ -55,3 +55,24 @@ func (m *Movies) GetByID(id int) (models.GetMovies, error) {
 
 	return movie, nil
 }
+
+func (m *Movies) GetByTitle(title string) (models.GetMovies, error) {
+	var movie models.GetMovies
+
+	if err := m.DB.Model(&models.Movies{}).
+		Where("deleted_at IS NULL").
+		Where("title = ?", title).
+		First(&movie).Error; err != nil {
+		return movie, err
+	}
+
+	return movie, nil
+}
+
+func (m *Movies) Create(movie models.Movies) error {
+	if err := m.DB.Create(&movie).Error; err != nil {
+		return err
+	}
+
+	return nil
+}

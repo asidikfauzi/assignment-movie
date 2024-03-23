@@ -8,6 +8,7 @@ import (
 type MovieController interface {
 	GetAll(c *gin.Context)
 	GetByID(c *gin.Context)
+	Create(c *gin.Context)
 }
 
 type MasterMovies struct {

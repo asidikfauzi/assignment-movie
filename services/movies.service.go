@@ -4,6 +4,7 @@ import (
 	"assignment-movie/common/helper"
 	"assignment-movie/domain"
 	"assignment-movie/models"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"math"
@@ -99,4 +100,43 @@ func (s *Movies) GetByID(c *gin.Context, id int, startTime time.Time) (models.Ge
 	}
 
 	return dataMovies, nil
+}
+
+func (s *Movies) Create(c *gin.Context, req models.ReqMovie, startTime time.Time) error {
+	var (
+		movie models.Movies
+		err   error
+	)
+
+	getMovie, _ := s.moviesPostgres.GetByTitle(req.Title)
+	if getMovie.Title != "" {
+		err = fmt.Errorf("title '%s' already exists", req.Title)
+		helper.ResponseAPI(c, false, http.StatusConflict, http.StatusText(http.StatusConflict), []string{err.Error()}, startTime)
+		return err
+	}
+
+	newImage, err := helper.UploadImageMovies(c, req.Image)
+	if err != nil {
+		helper.ResponseAPI(c, false, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), []string{err.Error()}, startTime)
+		return err
+	}
+
+	getImage := helper.GetImageMovies(c, newImage)
+
+	movie = models.Movies{
+		Title:       req.Title,
+		Description: req.Description,
+		Rating:      req.Rating,
+		Image:       getImage,
+		CreatedAt:   time.Now(),
+	}
+
+	err = s.moviesPostgres.Create(movie)
+	if err != nil {
+		log.Printf("error movie service Create: %s", err)
+		helper.ResponseAPI(c, false, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), []string{err.Error()}, startTime)
+		return err
+	}
+
+	return nil
 }
