@@ -1,0 +1,17 @@
+version: "3"
+services:
+  postgres:
+    hostname: postgres
+    image: postgres:latest
+    container_name: movies_postgres
+    environment:
+      POSTGRES_DB: movies
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
