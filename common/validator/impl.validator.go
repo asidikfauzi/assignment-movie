@@ -9,7 +9,10 @@ import (
 )
 
 func ValidatorMessage(item interface{}) []string {
-	var messages []string
+	var (
+		messages []string
+		fieldTag string
+	)
 
 	itemType := reflect.TypeOf(item)
 	itemValue := reflect.ValueOf(item)
@@ -17,7 +20,13 @@ func ValidatorMessage(item interface{}) []string {
 	for i := 0; i < itemType.NumField(); i++ {
 		index := strconv.Itoa(i)
 
-		fieldTag := itemType.Field(i).Tag.Get("json")
+		bindingType := itemType.Field(i).Tag.Get("bindingType")
+		if bindingType == "json" {
+			fieldTag = itemType.Field(i).Tag.Get("json")
+		} else if bindingType == "form" {
+			fieldTag = itemType.Field(i).Tag.Get("form")
+		}
+
 		fieldTagValidate := itemType.Field(i).Tag.Get("validate")
 		fieldValue := itemValue.Field(i)
 
@@ -32,7 +41,10 @@ func ValidatorMessage(item interface{}) []string {
 }
 
 func validateImplementation(idx string, tag, validate string, itemType reflect.Type, itemValue reflect.Value, data interface{}) []string {
-	var messages []string
+	var (
+		messages []string
+		fieldTag string
+	)
 
 	sliceTypes := reflect.TypeOf(data)
 	sliceValues := reflect.ValueOf(data)
@@ -62,6 +74,12 @@ func validateImplementation(idx string, tag, validate string, itemType reflect.T
 				}
 			}
 
+			if sliceValue.Kind() == reflect.Float32 && sliceValue.Interface().(float32) == 0 {
+				if tagContains(tag, firstTagPart) {
+					messages = append(messages, validateImplementation("-", tag, validate, sliceTypes, sliceValues, sliceValue.Interface())...)
+				}
+			}
+
 			if sliceValue.Kind() == reflect.Float64 && sliceValue.Interface().(float64) == 0 {
 				if tagContains(tag, firstTagPart) {
 					messages = append(messages, validateImplementation("-", tag, validate, sliceTypes, sliceValues, sliceValue.Interface())...)
@@ -72,7 +90,12 @@ func validateImplementation(idx string, tag, validate string, itemType reflect.T
 				for j := 0; j < sliceValue.NumField(); j++ {
 					index := strconv.Itoa(i)
 
-					fieldTag := sliceValue.Type().Field(j).Tag.Get("json")
+					bindingType := itemType.Field(i).Tag.Get("bindingType")
+					if bindingType == "json" {
+						fieldTag = sliceValue.Type().Field(j).Tag.Get("json")
+					} else if bindingType == "form" {
+						fieldTag = sliceValue.Type().Field(j).Tag.Get("form")
+					}
 					fieldTagValidate := sliceValue.Type().Field(j).Tag.Get("validate")
 					fieldValue := sliceValue.Field(j)
 
@@ -97,7 +120,12 @@ func validateImplementation(idx string, tag, validate string, itemType reflect.T
 		}
 
 		for i := 0; i < sliceValues.NumField(); i++ {
-			fieldTag := sliceValues.Type().Field(i).Tag.Get("json")
+			bindingType := itemType.Field(i).Tag.Get("bindingType")
+			if bindingType == "json" {
+				fieldTag = sliceValues.Type().Field(i).Tag.Get("json")
+			} else if bindingType == "form" {
+				fieldTag = sliceValues.Type().Field(i).Tag.Get("form")
+			}
 			fieldTagValidate := sliceValues.Type().Field(i).Tag.Get("validate")
 			fieldValue := sliceValues.Field(i)
 
@@ -111,6 +139,10 @@ func validateImplementation(idx string, tag, validate string, itemType reflect.T
 			message = fmt.Sprintf("Field '%s'", tag)
 		} else {
 			message = fmt.Sprintf("Field '%s.%s'", tag, idx)
+		}
+
+		if sliceTypes.Kind() == reflect.Float32 && hasRequiredTag(validate) && (data == nil || data.(float32) == 0) {
+			messages = append(messages, message+helper.RequiredMessage)
 		}
 
 		if sliceTypes.Kind() == reflect.Float64 && hasRequiredTag(validate) && (data == nil || data.(float64) == 0) {

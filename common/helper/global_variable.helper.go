@@ -33,3 +33,6 @@ const (
 	SuccessUpdatedData = "Successfully Updated Data!"
 	SuccessDeletedData = "Successfully Deleted Data!"
 )
+
+// Storage
+const StorageImage = "common/public/assets/img/"
