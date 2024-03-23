@@ -1,7 +1,6 @@
 package models
 
 import (
-	"mime/multipart"
 	"time"
 )
 
@@ -28,9 +27,9 @@ type (
 	}
 
 	ReqMovie struct {
-		Title       string                `form:"title" bindingType:"form" validate:"required"`
-		Description string                `form:"description" bindingType:"form" validate:"required"`
-		Rating      float32               `form:"rating" bindingType:"form" validate:"required,number"`
-		Image       *multipart.FileHeader `form:"image" bindingType:"form"`
+		Title       string  `form:"title" bindingType:"form" validate:"required"`
+		Description string  `form:"description" bindingType:"form" validate:"required"`
+		Rating      float32 `form:"rating" bindingType:"form" validate:"required,number"`
+		Image       string  `form:"image,omitempty" bindingType:"form"`
 	}
 )

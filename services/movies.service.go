@@ -8,7 +8,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"math"
+	"mime/multipart"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -102,7 +104,7 @@ func (s *Movies) GetByID(c *gin.Context, id int, startTime time.Time) (models.Ge
 	return dataMovies, nil
 }
 
-func (s *Movies) Create(c *gin.Context, req models.ReqMovie, startTime time.Time) error {
+func (s *Movies) Create(c *gin.Context, file *multipart.FileHeader, req models.ReqMovie, startTime time.Time) error {
 	var (
 		movie models.Movies
 		err   error
@@ -115,7 +117,7 @@ func (s *Movies) Create(c *gin.Context, req models.ReqMovie, startTime time.Time
 		return err
 	}
 
-	newImage, err := helper.UploadImageMovies(c, req.Image)
+	newImage, err := helper.UploadImageMovies(c, file)
 	if err != nil {
 		helper.ResponseAPI(c, false, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), []string{err.Error()}, startTime)
 		return err
@@ -134,6 +136,64 @@ func (s *Movies) Create(c *gin.Context, req models.ReqMovie, startTime time.Time
 	err = s.moviesPostgres.Create(movie)
 	if err != nil {
 		log.Printf("error movie service Create: %s", err)
+		helper.ResponseAPI(c, false, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), []string{err.Error()}, startTime)
+		return err
+	}
+
+	return nil
+}
+
+func (s *Movies) Update(c *gin.Context, id string, file *multipart.FileHeader, req models.ReqMovie, startTime time.Time) error {
+	var (
+		movie models.Movies
+		err   error
+	)
+
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		helper.ResponseAPI(c, false, http.StatusBadRequest, http.StatusText(http.StatusBadRequest), []string{err.Error()}, startTime)
+		return err
+
+	}
+
+	_, err = s.moviesPostgres.GetByID(idInt)
+	if err != nil {
+		err = fmt.Errorf("Movies ID '%s' not found.", req.Title)
+		helper.ResponseAPI(c, false, http.StatusNotFound, http.StatusText(http.StatusNotFound), []string{err.Error()}, startTime)
+		return err
+	}
+
+	timeNow := time.Now()
+
+	movie = models.Movies{
+		ID:          idInt,
+		Title:       req.Title,
+		Description: req.Description,
+		Rating:      req.Rating,
+		UpdatedAt:   &timeNow,
+	}
+
+	exists, _ := s.moviesPostgres.CheckIfExists(movie)
+	if exists == true {
+		err = fmt.Errorf("title '%s' already exists", req.Title)
+		helper.ResponseAPI(c, false, http.StatusConflict, http.StatusText(http.StatusConflict), []string{err.Error()}, startTime)
+		return err
+	}
+
+	if file != nil {
+		newImage, err := helper.UploadImageMovies(c, file)
+		if err != nil {
+			helper.ResponseAPI(c, false, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), []string{err.Error()}, startTime)
+			return err
+		}
+
+		getImage := helper.GetImageMovies(c, newImage)
+		movie.Image = getImage
+	}
+
+	err = s.moviesPostgres.Update(movie)
+	if err != nil {
+		log.Printf("error movie service Update: %s", err)
 		helper.ResponseAPI(c, false, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), []string{err.Error()}, startTime)
 		return err
 	}

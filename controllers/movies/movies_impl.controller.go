@@ -64,8 +64,12 @@ func (m *MasterMovies) Create(c *gin.Context) {
 		}
 	}
 
+	if file.Size > helper.MaxFileSize {
+		helper.ResponseAPI(c, false, http.StatusUnprocessableEntity, http.StatusText(http.StatusUnprocessableEntity), []string{helper.MaxFileSizeMessage}, startTime)
+		return
+	}
+
 	var req models.ReqMovie
-	req.Image = file
 	if err = c.ShouldBindWith(&req, binding.Form); err != nil {
 		helper.ResponseAPI(c, false, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError), []string{err.Error()}, startTime)
 		return
@@ -77,12 +81,47 @@ func (m *MasterMovies) Create(c *gin.Context) {
 		return
 	}
 
-	err = m.MoviesService.Create(c, req, startTime)
+	err = m.MoviesService.Create(c, file, req, startTime)
 	if err != nil {
 		log.Printf("error movies controller CreateMovie :%s", err)
 		return
 	}
 
 	helper.ResponseAPI(c, true, http.StatusCreated, http.StatusText(http.StatusCreated), []string{helper.SuccessCreatedData}, startTime)
+	return
+}
+
+func (m *MasterMovies) Update(c *gin.Context) {
+	startTime := time.Now()
+
+	id := c.Param("id")
+	file, _ := c.FormFile("image")
+
+	if file != nil {
+		if file.Size > helper.MaxFileSize {
+			helper.ResponseAPI(c, false, http.StatusUnprocessableEntity, http.StatusText(http.StatusUnprocessableEntity), []string{helper.MaxFileSizeMessage}, startTime)
+			return
+		}
+	}
+
+	var req models.ReqMovie
+	if err := c.ShouldBindWith(&req, binding.Form); err != nil {
+		helper.ResponseAPI(c, false, http.StatusUnprocessableEntity, http.StatusText(http.StatusUnprocessableEntity), []string{err.Error()}, startTime)
+		return
+	}
+
+	validate := validator.ValidatorMessage(req)
+	if len(validate) > 0 {
+		helper.ResponseAPI(c, false, http.StatusUnprocessableEntity, http.StatusText(http.StatusUnprocessableEntity), validate, startTime)
+		return
+	}
+
+	err := m.MoviesService.Update(c, id, file, req, startTime)
+	if err != nil {
+		log.Printf("error movies controller UpdateMovie :%s", err)
+		return
+	}
+
+	helper.ResponseAPI(c, true, http.StatusOK, http.StatusText(http.StatusOK), []string{helper.SuccessUpdatedData}, startTime)
 	return
 }

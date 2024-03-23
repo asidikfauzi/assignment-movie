@@ -3,9 +3,7 @@ package routes
 import (
 	"assignment-movie/common/helper"
 	"assignment-movie/controllers/movies"
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 type InitRoutes interface {
@@ -25,6 +23,8 @@ func InitPackage() *RouteService {
 func (r *RouteService) InitRouter() {
 	router := gin.Default()
 
+	router.Static("/common/public/assets/img", "./common/public/assets/img")
+
 	api := router.Group("/api")
 	{
 		prefix := api.Group("/v1")
@@ -34,26 +34,11 @@ func (r *RouteService) InitRouter() {
 				movie.GET("", r.MovieService.GetAll)
 				movie.GET(":id", r.MovieService.GetByID)
 				movie.POST("", r.MovieService.Create)
+				movie.PATCH(":id", r.MovieService.Update)
 			}
 		}
 
 	}
-
-	router.POST("/upload", func(c *gin.Context) {
-		file, err := c.FormFile("image")
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		nameImage, err := helper.UploadImageMovies(c, file)
-
-		fmt.Println(nameImage)
-
-		c.JSON(http.StatusOK, gin.H{"message": "Gambar berhasil diunggah"})
-	})
-
-	router.Static("/common/public/assets/img", "./common/public/assets/img")
 
 	err := router.Run(":" + helper.GetEnv("APP_PORT"))
 	if err != nil {

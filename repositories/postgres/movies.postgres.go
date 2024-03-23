@@ -76,3 +76,26 @@ func (m *Movies) Create(movie models.Movies) error {
 
 	return nil
 }
+
+func (m *Movies) Update(movie models.Movies) error {
+	if err := m.DB.Where("id = ?", movie.ID).Updates(&movie).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Movies) CheckIfExists(movie models.Movies) (bool, error) {
+	var count int64
+	err := m.DB.Model(&models.Movies{}).
+		Where("deleted_at IS NULL").
+		Where("title = ?", movie.Title).
+		Not("id = ?", movie.ID).
+		Count(&count).Error
+
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
